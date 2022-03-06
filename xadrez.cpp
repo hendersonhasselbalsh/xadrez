@@ -1,12 +1,45 @@
 //////////
 
 #include <iostream>
+#include <cmath>
 #include <SFML/Graphics.hpp>
 
 using namespace std;
 using namespace sf;
 
 int size = 56;
+Sprite f[32];
+
+int tabuleiro[8][8] = {
+    -1,-2,-3,-4,-5,-3,-2,-1,
+    -6,-6,-6,-6,-6,-6,-6,-6,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    6, 6, 6, 6, 6, 6, 6, 6,
+    1, 2, 3, 4, 5, 3, 2, 1
+};
+
+void loadPosition()
+{
+    int k = 0;
+    for(int i = 0; i < 8; i++)
+    {
+        for(int j = 0; j < 8; j++)
+        {
+            int peca  =  tabuleiro[i][j];
+            if(!peca) { continue; }
+            int cor  =  (peca > 0) ? 1 : 0;  // define a cor da peça
+            peca = abs(peca) - 1;            // define a peça
+
+            f[k].setTextureRect(IntRect(peca*size, cor*size, size, size));
+            f[k].setPosition(j*size, i*size);
+            k++;
+        }
+    }
+}
+
 
 
 int main(int argc, char** argv)
@@ -21,13 +54,14 @@ int main(int argc, char** argv)
     Sprite board;
     board.setTexture(t1);
 
-    Sprite f;
-    f.setTexture(t2);
+    for(int i = 0; i < 32; i++) { f[i].setTexture(t2); }
+    loadPosition();
 
     Event evento;
 
     double dx = 0, dy = 0;
     bool isMove = false;
+    int n = 0;
 
 
     while(wnd.isOpen())
@@ -41,18 +75,17 @@ int main(int argc, char** argv)
             //----- drag/arrastar -----
             if(evento.type == Event::MouseButtonPressed && evento.key.code == Mouse::Left)
             {
-                if(f.getGlobalBounds().contains(pos.x, pos.y))
+                for(int i = 0; i < 32; i++)
                 {
-                    isMove = true;                             // calcula deslocamento
-                    dx  =  pos.x  -  f.getPosition().x ;       // deslocamento horizontal
-                    dy  =  pos.y  -  f.getPosition().y ;       // deslocamento vertical
+                    if(f[i].getGlobalBounds().contains(pos.x, pos.y))
+                    {
+                        n = i;
+                        isMove = true;                             // calcula deslocamento
+                        dx  =  pos.x  -  f[i].getPosition().x ;       // deslocamento horizontal
+                        dy  =  pos.y  -  f[i].getPosition().y ;       // deslocamento vertical
+                    }
                 }
             }
-
-            
-            cout << pos.x << " - " << f.getPosition().x << " = " << dx << endl;
-            cout << pos.y << " - " << f.getPosition().y << " = " << dy << endl << endl;
-
 
             //----- drop/soltar -----
             if(evento.type == Event::MouseButtonReleased && evento.key.code == Mouse::Left)
@@ -62,13 +95,13 @@ int main(int argc, char** argv)
 
         }
 
-        if(isMove) { f.setPosition(pos.x - dx, pos.y - dy); }
+        if(isMove) { f[n].setPosition(pos.x - dx, pos.y - dy); }
 
 
 
         wnd.clear();
         wnd.draw(board);
-        wnd.draw(f);
+        for(int i = 0; i < 32; i++) { wnd.draw(f[i]); }
         wnd.display();
     }
 
